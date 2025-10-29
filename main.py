@@ -18,3 +18,11 @@ async def receive_location(request: Request):
         "timestamp": datetime.utcnow().isoformat(),
         "data": data
     }
+
+
+@app.get("/latest")
+def get_latest():
+    """Return the most recent location entry."""
+    if not logs:
+        return {"status": "no data yet"}
+    return logs[-1]
