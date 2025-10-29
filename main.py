@@ -3,26 +3,32 @@ from datetime import datetime
 
 app = FastAPI()
 
-# just a test
-@app.get("/")
-def root():
-    return {"status": "ok", "message": "API is live!"}
+# In-memory log store
+logs = []
 
-# new endpoint to receive location
+@app.get("/")
+def home():
+    return {"status": "Apple location API online"}
+
 @app.post("/location")
 async def receive_location(request: Request):
+    """Receives location data from Apple Shortcut and stores it in memory."""
     data = await request.json()
-    print("📍 Location update:", data)  # shows up in Render logs
-    return {
-        "status": "received",
+    entry = {
         "timestamp": datetime.utcnow().isoformat(),
         "data": data
     }
+    logs.append(entry)
+    return {"status": "received", "timestamp": entry["timestamp"], "data": data}
 
+@app.get("/logs")
+def get_logs():
+    """Return the 10 most recent location entries."""
+    return {"count": len(logs), "data": logs[-10:]}
 
 @app.get("/latest")
 def get_latest():
-    """Return the most recent location entry."""
+    """Return only the most recent location entry."""
     if not logs:
         return {"status": "no data yet"}
     return logs[-1]
